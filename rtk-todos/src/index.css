@@ -34,6 +34,12 @@ input, button {
   border-radius: 5px;
 }
 
+.todo-metrics {
+  display: flex;
+  justify-content: space-between;
+  margin: 1rem 0;
+}
+
 .add {
   display: flex;
   flex-direction: row;

@@ -1,13 +1,26 @@
 import React, { useCallback, useRef } from "react";
-import { ApiProvider } from "@reduxjs/toolkit/query/react";
 
-import { todoApi, Todo } from "./store";
+import {
+  useGetAllQuery,
+  useDeleteTodoMutation,
+  useUpdateTodoMutation,
+  useAddTodoMutation,
+} from "./redux/Features/Todos/todosApiSlice";
+import type { Todo } from "./interfaces";
+import { Provider } from "react-redux";
+import { store, useCustomSelector } from "./redux/store";
 
 function TodoApp() {
-  const { data: todos } = todoApi.useGetAllQuery();
-  const [deleteTodo] = todoApi.useDeleteTodoMutation();
-  const [updateTodo] = todoApi.useUpdateTodoMutation();
-  const [addTodo] = todoApi.useAddTodoMutation();
+  const { data: todos,  } = useGetAllQuery();
+  const [deleteTodo] = useDeleteTodoMutation();
+  const [updateTodo] = useUpdateTodoMutation();
+  const [addTodo] = useAddTodoMutation();
+
+  const {totalCount, totalDone, doneRatio} = useCustomSelector((state) => ({
+    totalCount: state.todos.totalCount,
+    totalDone: state.todos.totalDone,
+    doneRatio: state.todos.doneRatio,
+  }));
 
   const textRef = useRef<HTMLInputElement>(null);
   const onAdd = useCallback(() => {
@@ -24,6 +37,12 @@ function TodoApp() {
 
   return (
     <div className="App">
+      <div className='todo-metrics'>
+        <span>Total count: {totalCount}</span>
+        <span>Total done: {totalDone}</span>
+        <span>Done ratio: {`${doneRatio.toFixed(2)}%`}</span>
+      </div>
+
       <div className="todos">
         {todos?.map((todo) => (
           <React.Fragment key={todo.id}>
@@ -49,9 +68,9 @@ function TodoApp() {
 
 function App() {
   return (
-    <ApiProvider api={todoApi}>
+    <Provider store={store}>
       <TodoApp />
-    </ApiProvider>
+    </Provider>
   );
 }
 
