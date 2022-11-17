@@ -8,77 +8,39 @@ import {
   Param,
   HttpCode,
 } from '@nestjs/common';
+import { TodoService } from './todo.service';
+import { Todo } from './todos.dto';
 
-interface Todo {
-  id: number;
-  text: string;
-  active: boolean;
-  done: boolean;
-}
-
-let todos: Todo[] = [
-  'NestJS',
-  'GraphQL',
-  'Apollo',
-  'TypeScript',
-  'React',
-  'Redux',
-  'React Query',
-  'Angular',
-  'Vue',
-  'D3',
-  'Svelte',
-  'SolidJS',
-  'NextJS',
-  'AWS',
-].map((text, index) => ({
-  id: index + 1,
-  text: `Learn ${text}`,
-  active: true,
-  done: false,
-}));
 
 @Controller('todos')
 export class TodosController {
-  constructor() {}
+  constructor(
+    private readonly todoService: TodoService,
+  ) {}
 
   @Get()
   async index(): Promise<Todo[]> {
-    return todos.filter(({ active }) => active);
+    return this.todoService.findAll();
   }
 
   @Get(':id')
   async show(@Param('id') id: string): Promise<Todo> {
-    return todos.find((todo) => todo.id === parseInt(id));
+    return this.todoService.findOneById(parseInt(id));
   }
 
   @Post()
   async create(@Body() { text }: { text: string }): Promise<Todo> {
-    const todo = {
-      id: todos.length + 1,
-      text,
-      active: true,
-      done: false,
-    };
-    todos.push(todo);
-    return todo;
+    return this.todoService.create(text);
   }
 
   @Put(':id')
   async update(@Param('id') id: string, @Body() data: Todo): Promise<Todo> {
-    todos = todos.map((todo) =>
-      todo.id === parseInt(id) ? { ...todo, ...data } : todo,
-    );
-
-    return data;
+    return this.todoService.updateOneById(parseInt(id), data);
   }
 
   @Delete(':id')
   @HttpCode(204)
   async destroy(@Param('id') id: string): Promise<number> {
-    todos = todos.map((todo) =>
-      todo.id === parseInt(id) ? { ...todo, active: false } : todo,
-    );
-    return parseInt(id);
+    return this.todoService.deleteOneById(parseInt(id));
   }
 }
