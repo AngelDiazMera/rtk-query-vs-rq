@@ -1,22 +1,39 @@
 import React, { useRef } from "react";
-import { QueryClientProvider, QueryClient } from "react-query";
+import {
+  useQuery,
+  useMutation,
+  QueryClientProvider,
+  QueryClient,
+} from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { Provider } from "react-redux";
-import {
-  useCreateTodoMutation,
-  useDeleteTodoMutation,
-  useGetTodosQuery,
-  useUpdateTodoMutation,
-} from "./hooks/api";
-import { store, useCustomSelector } from "./redux/store";
+import { store, useCustomDispatch, useCustomSelector } from "./redux/store";
+import { getTodosThunk } from "./redux/ThunkActions/Todos/getTodos";
+
+import { deleteTodo, updateTodos, addTodo } from "./services/todos";
 
 const queryClient = new QueryClient();
 
 function TodoApp() {
-  const { data: todos, refetch } = useGetTodosQuery();
-  const updateMutation = useUpdateTodoMutation();
-  const deleteMutation = useDeleteTodoMutation();
-  const createMutation = useCreateTodoMutation();
+  const dispatch = useCustomDispatch();
+
+  const { data: todos, refetch } = useQuery({
+    queryKey: "todos",
+    queryFn: async () => await dispatch(getTodosThunk()),
+    initialData: [],
+  });
+
+  const updateMutation = useMutation(updateTodos, {
+    onSuccess: () => queryClient.invalidateQueries("todos"),
+  });
+
+  const deleteMutation = useMutation(deleteTodo, {
+    onSuccess: () => queryClient.invalidateQueries("todos"),
+  });
+
+  const createMutation = useMutation(addTodo, {
+    onSuccess: () => queryClient.invalidateQueries("todos"),
+  });
 
   const textRef = useRef<HTMLInputElement>(null);
 
