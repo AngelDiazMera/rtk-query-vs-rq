@@ -1,69 +1,41 @@
 import React, { useRef } from "react";
-import {
-  useQuery,
-  useMutation,
-  QueryClientProvider,
-  QueryClient,
-} from "react-query";
+import { QueryClientProvider, QueryClient } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
-import axios from "axios";
-
-import { getTodos, Todo, updateTodo, deleteTodo, createTodo } from "./lib/api";
-
-export const axiosClient = axios.create({
-  baseURL: "http://localhost:4000/",
-});
+import { Provider } from "react-redux";
+import {
+  useCreateTodoMutation,
+  useDeleteTodoMutation,
+  useGetTodosQuery,
+  useUpdateTodoMutation,
+} from "./hooks/api";
+import { store, useCustomSelector } from "./redux/store";
 
 const queryClient = new QueryClient();
 
 function TodoApp() {
-  // const { data: todos } = useQuery<Todo[]>("todos", getTodos, {
-  //   initialData: [],
-  // });
-  const { data: todos } = useQuery<Todo[]>(
-    "todos",
-    async () => (await axiosClient.get<Todo[]>("/todos")).data,
-    {
-      initialData: [],
-    }
-  );
-  // const updateMutation = useMutation(updateTodo, {
-  //   onSuccess: () => queryClient.invalidateQueries("todos"),
-  // });
-  const updateMutation = useMutation<Response, unknown, Todo>(
-    (todo) => axiosClient.put(`/todos/${todo.id}`, todo),
-    {
-      onSettled: () => queryClient.invalidateQueries("todos"),
-    }
-  );
-
-  // const deleteMutation = useMutation(deleteTodo, {
-  //   onSuccess: () => queryClient.invalidateQueries("todos"),
-  // });
-  const deleteMutation = useMutation<Response, unknown, Todo>(
-    ({ id }) => axiosClient.delete(`/todos/${id}`),
-    {
-      onSettled: () => queryClient.invalidateQueries("todos"),
-    }
-  );
-
-  // const createMutation = useMutation(createTodo, {
-  //   onSuccess: () => queryClient.invalidateQueries("todos"),
-  // });
-  const createMutation = useMutation<Response, unknown, { text: string }>(
-    (data) => axiosClient.post("/todos", data),
-    {
-      onSettled: () => {
-        queryClient.invalidateQueries("todos");
-        textRef.current!.value = "";
-      },
-    }
-  );
+  const { data: todos, refetch } = useGetTodosQuery();
+  const updateMutation = useUpdateTodoMutation();
+  const deleteMutation = useDeleteTodoMutation();
+  const createMutation = useCreateTodoMutation();
 
   const textRef = useRef<HTMLInputElement>(null);
 
+  const { totalCount, totalDone, doneRatio } = useCustomSelector((state) => ({
+    totalCount: state.todos.totalCount,
+    totalDone: state.todos.totalDone,
+    doneRatio: state.todos.doneRatio,
+  }));
+
   return (
     <div className="App">
+      <div className="todo-metrics">
+        <span>Total count: {totalCount}</span>
+        <span>Total done: {totalDone}</span>
+        <span>Done ratio: {`${doneRatio.toFixed(2)}%`}</span>
+      </div>
+
+      <button onClick={() => refetch()}>Reload</button>
+
       <div className="todos">
         {todos?.map((todo) => (
           <React.Fragment key={todo.id}>
@@ -79,7 +51,7 @@ function TodoApp() {
             </div>
             <button
               onClick={() => {
-                deleteMutation.mutate(todo);
+                deleteMutation.mutate(todo.id);
               }}
             >
               Delete
@@ -91,7 +63,7 @@ function TodoApp() {
         <input type="text" ref={textRef} />
         <button
           onClick={() => {
-            createMutation.mutate({ text: textRef.current!.value ?? "" });
+            createMutation.mutate(textRef.current!.value ?? "");
           }}
         >
           Add
@@ -103,10 +75,12 @@ function TodoApp() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TodoApp />
-      <ReactQueryDevtools />
-    </QueryClientProvider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <TodoApp />
+        <ReactQueryDevtools />
+      </QueryClientProvider>
+    </Provider>
   );
 }
 

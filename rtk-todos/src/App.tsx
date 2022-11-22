@@ -11,7 +11,7 @@ import { Provider } from "react-redux";
 import { store, useCustomSelector } from "./redux/store";
 
 function TodoApp() {
-  const { data: todos,  } = useGetAllQuery();
+  const { data: todos, refetch } = useGetAllQuery();
   const [deleteTodo] = useDeleteTodoMutation();
   const [updateTodo] = useUpdateTodoMutation();
   const [addTodo] = useAddTodoMutation();
@@ -42,6 +42,8 @@ function TodoApp() {
         <span>Total done: {totalDone}</span>
         <span>Done ratio: {`${doneRatio.toFixed(2)}%`}</span>
       </div>
+
+<button onClick={() => refetch()}>Reload</button>
 
       <div className="todos">
         {todos?.map((todo) => (

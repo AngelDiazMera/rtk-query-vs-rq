@@ -13,7 +13,7 @@ import type { Todo } from "../../../interfaces";
 import { setTotalCount, setTotalDone } from "./todosSlice";
 
 type ApiResponse<ReturnType> = MaybePromise<
-QueryReturnValue<ReturnType, FetchBaseQueryError, unknown>
+  QueryReturnValue<ReturnType, FetchBaseQueryError, unknown>
 >;
 
 // Define a service using a base URL and expected endpoints
