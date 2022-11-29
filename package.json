@@ -1,0 +1,24 @@
+{
+  "name": "rtk-query-vs-rq",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"cd rtk-todos && yarn start\" \"cd rq-todos && yarn start\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AngelDiazMera/rtk-query-vs-rq.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AngelDiazMera/rtk-query-vs-rq/issues"
+  },
+  "homepage": "https://github.com/AngelDiazMera/rtk-query-vs-rq#readme",
+  "dependencies": {
+    "concurrently": "^7.6.0"
+  }
+}

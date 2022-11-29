@@ -15,6 +15,9 @@ import { deleteTodo, updateTodos, addTodo } from "./services/todos";
 const queryClient = new QueryClient();
 
 function TodoApp() {
+  const renderCount = useRef(0);
+  renderCount.current = renderCount.current + 1;
+
   const dispatch = useCustomDispatch();
 
   const { data: todos, refetch } = useQuery({
@@ -45,13 +48,21 @@ function TodoApp() {
 
   return (
     <div className="App">
+      <span>Total renders since last update: {renderCount.current}</span>
       <div className="todo-metrics">
         <span>Total count: {totalCount}</span>
         <span>Total done: {totalDone}</span>
         <span>Done ratio: {`${doneRatio.toFixed(2)}%`}</span>
       </div>
 
-      <button onClick={() => refetch()}>Reload</button>
+      <button
+        onClick={() => {
+          renderCount.current = 0;
+          refetch();
+        }}
+      >
+        Reload
+      </button>
 
       <div className="todos">
         {todos?.map((todo) => (
@@ -61,6 +72,7 @@ function TodoApp() {
                 type="checkbox"
                 checked={todo.done}
                 onChange={() => {
+                  renderCount.current = 0;
                   updateMutation.mutate({ ...todo, done: !todo.done });
                 }}
               />
@@ -68,6 +80,7 @@ function TodoApp() {
             </div>
             <button
               onClick={() => {
+                renderCount.current = 0;
                 deleteMutation.mutate(todo.id);
               }}
             >
@@ -80,6 +93,7 @@ function TodoApp() {
         <input type="text" ref={textRef} />
         <button
           onClick={() => {
+            renderCount.current = 0;
             createMutation.mutate(textRef.current!.value ?? "");
           }}
         >
